@@ -94,5 +94,18 @@ Podemos poner el sistema operativo a trabajar, deliberadamente y para que haga l
 
 En este codigo, las funciones \textit{open, read, write y close} son llamadas al sistema, cuyo man se puede encontrar en: \href{http://man7.org/linux/man-pages/man2/}{manual de llamadas al sistema}, es fundamental saber utilizar esta herramienta y manejar con solvencia las llamadas al sistema mas habituales.
 
+\section{Procesos}
+
+\subsection{Conceptos basicos}
+Un proceso es la unidad de procesamiento gestionada por el sistema operativo.\par
+El sistema operativo mantiene una tabla de procesos. En esta tabla se almacena un \textbf{bloque de control de proceso} por cada proceso.
+El BCP contiene la siguiente informacion:
+\begin{itemize}
+	\item{Identifiacion: PID, USER y relaciones padre-hijo}
+	\item{Estado del procesador}
+	\item{Informacion de control del proceso}
+	\item{Memoria asignada}
+	\item{Recursos asignados}
+\end{itemize}
 
 \end{document}
