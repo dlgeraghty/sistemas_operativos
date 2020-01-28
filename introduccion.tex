@@ -98,7 +98,7 @@ En este codigo, las funciones \textit{open, read, write y close} son llamadas al
 
 \subsection{Conceptos basicos}
 Un proceso es la unidad de procesamiento gestionada por el sistema operativo.\par
-El sistema operativo mantiene una tabla de procesos. En esta tabla se almacena un \textbf{bloque de control de proceso} por cada proceso.
+El sistema operativo mantiene una tabla de procesos. En esta tabla se almacena un \textbf{bloque de control de proceso} \textit{(estructura \href{https://github.com/torvalds/linux/blob/master/include/linux/sched.h}{task\_struct} en linux)} por cada proceso.
 El BCP contiene la siguiente informacion:
 \begin{itemize}
 	\item{Identifiacion: PID, USER y relaciones padre-hijo}
@@ -106,6 +106,42 @@ El BCP contiene la siguiente informacion:
 	\item{Informacion de control del proceso}
 	\item{Memoria asignada}
 	\item{Recursos asignados}
+\end{itemize}
+
+\subsection{threads}
+
+Un proceso puede contener varios threads, o hilos de ejecucion que comparten algunos recursos e informacion entre ellos.\par
+
+Cada thread se define como una funcion que se puede lanzar en paralelo con otras.\par
+
+Los threads del mismo proceso comparten parte de su informacion: Memoria, variables globales, archivos abiertos, procesos hijos, temporizadores y semaforos. Que compartan la memoria genera que no haya proteccion de memoria y los threads son independientes unos de otros hasta cierto punto.\par
+Pero no comparten: contador de programa, pila, registros y estado. En resumen, el contexto de ejecucion.\par
+
+Las ventajas que proporciona este mecanismo de "dividir el trabajo de los procesos en tareas mas sencillas" es claro y sigue el paradigma de divide y venceras, sin embargo, cuando entramos en el terreno de la programacion concurrente hemos de ser cuidadosos por los tipicos problemas que pueden surgir.\par
+
+\subsection{senales}
+
+Se puede describir una senal como una interrupcion a un proceso. El comportamiento de las senales es similar al de las interrupciones en la cpu.\par
+
+Las senales pueden provenir o bien de un proceso que la manda a otro proceso con su mismo \textit{uid} o el sistema operativo ante las tipicas excepciones que vemos cuando fallan nuestros programas (seg fault, /0...)\par
+
+Hay muchas senales diferentes y se engloban en tres tipos fundamentales: De hardware, de comunicacion y de E/S asincrona.\par
+
+Para que un proceso pueda enviar una senal ha de estar preparado para recibirla. Para ello tenemos que indicarle al SO el nombre de la rutina del proceso que ha de tratar ese tipo de senal. Si un proceso recibe una senal sin estar preparado para ello, se suele matar al proceso.
+
+\subsection{Servicios de procesos}
+
+Gestion de procesos:
+
+\begin{itemize}
+	\item{Identificador de proceso: PID (pid\_t)}
+	\item{Obtener el identificador de proceso: getpid() devuelve el identificador del proceso que hizo la llamada}
+	\item{Obtener el identificador del proceso padre: getppid()}
+	\item{Obtener el identificador de usuario real: getuid()}
+	\item{Obtener el identificador de usuario efectivo: geteuid()}
+	\item{Obtener el identificador de grupo real: getgid()}
+	\item{Obtener el identificador de grupo efectivo: getegid()}
+	\item{Obtener el valor de una variable de entorno: *getenv( const char * name )}
 \end{itemize}
 
 \end{document}
