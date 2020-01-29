@@ -142,6 +142,34 @@ Gestion de procesos:
 	\item{Obtener el identificador de grupo real: getgid()}
 	\item{Obtener el identificador de grupo efectivo: getegid()}
 	\item{Obtener el valor de una variable de entorno: *getenv( const char * name )}
+	\item{Fijar el entorno de proceso: *setenv(char **env)}
+	\item{Crear un proceso: fork(). Clona al proceso que lo creo, pasando a ser su hijo}
+	\item{Ejecutar un programa: familia exec. Cambia el programa que esta ejecutando un proceso}
+	\item{Terminar la ejecucion de un proceso: exit(int status). Similar a los return}
+	\item{Esperar a la finalizacion de un proceso hijo: wait(int *status) o wait\_pid(pid\_t , int * status, int options)}
+	\item{Suspender la ejecucion de un proceso: sleep(unsigned int seconds)}
 \end{itemize}
+
+Gestion de threads:
+
+\begin{itemize}
+	\item Atributos de un thread: (cada thread tiene asociado unos atributos, y los valores de estos se almacenan en un objeto de tipo \textit{pthread\_attr\_t}
+		\begin{itemize}
+			\item Crear atributos de un thread: int pthread\_attr\_init(pthread\_attr\_t *attr);
+			\item Destruir atributos: int pthread\_attr\_destroy(pthread\_attr\_t *attr);
+			\item Asignar tamano al thread: int pthread\_attr\_setstacksize(pthread\_attr\_t *attr);
+			\item Obtener el tamano de la pila: int pthread\_attr\_getstacksize(pthread\_attr\_t *attr)
+			\item Establecer el estado de terminacion: int pthread\_attr\_setdetachstate(pthread\_attr\_t * attr, int detachstate). El valor del segundo argumento, indicara la independencia o no del thread con respecto a otros.
+			\item Obtener el estado de terminacion: int pthread\_attr\_setdetacstate(pthread\_attr\_t * attr, int * detachstate)
+		\end{itemize}
+	\item Creacion, identificaciony terminacion de threads:
+		\begin{itemize}
+			\item Crear un thread: int pthread\_create(pthread\_t *thread, pthread\_attr\_r *attr, void * (*start\_routine) (void *), void * arg). El primer argumento es el indentificador, el segundo atributos de ejecucion, el tercero el nombre de la funcion a ejecutar cuando se lance y el ultimo es un puntero a void.
+			\item Obtener el identificador de un thread: pthread\_t pthread\_self(void)
+			\item Esperar la terminacion de un thread: int pthread\_join(pthread thid, void **value). Es necesario indicar el thread por el que se quiere esperar.
+			\item Finalizar la ejecucion de un thread: int pthread\_exit(void * value)
+		\end{itemize}
+\end{itemize}
+
 
 \end{document}
