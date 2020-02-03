@@ -94,6 +94,43 @@ Podemos poner el sistema operativo a trabajar, deliberadamente y para que haga l
 
 En este codigo, las funciones \textit{open, read, write y close} son llamadas al sistema, cuyo man se puede encontrar en: \href{http://man7.org/linux/man-pages/man2/}{manual de llamadas al sistema}, es fundamental saber utilizar esta herramienta y manejar con solvencia las llamadas al sistema mas habituales.
 
+\section{Archivos y directorios}
+
+\subsection{Conceptos basicos de archivos}
+El sistema operativo nos oculta los detalles de la implementacion fisica del disco, proporcionandonos lo que conocemos como archivo.\par
+
+\textit{Que es un archivo: Es una unidad de almacenamiento logico \textbf{no volatil} que agrupa un conjunto de informacion relacionada entre si bajo un mismo nombre}\par
+
+Carateristicas de un archivo:
+
+\begin{itemize}
+	\item Desde el punto de vista de el sistema operativo este debe proporcionar al menos una estructura de archivo que permita realizar sobre el: darle nombre, proteccion y sistema eficiente de gestion de estos mismos. Ademas debe permitir anadirle los atributos que se deseen.
+	\item El nombre y extension son basicos para un archivo y deben permitir que se le distinga inequivocamente
+	\item El usuario debe percibir sencillez para manipular archivos. La traduccion entre las direcciones fisicas y logicas es lo que depende segun el sistema operativo pero se basa en el \textbf{mapa de archivos} que se almacena como atributo.
+	\item Se distinguen dos tipos principales de acceso a la informacion en los archivos: \textbf{Secuencial}, si todos los bytes estan seguidos y en orden o \textbf{acceso aleatorio o directo} que permiten el acceso por conjuntos y desordenado.
+	\item Cuando se accede de forma concurrente al mismo archivo, se establecen mecanismos tipicos para tratar la concurrencia: Archivos inmutables, sesiones(copias y versiones) y UNIX(cada proceso trabaja con su imagen independiente del archivo y no se permite que compartan el apuntador.)
+\end{itemize}
+
+\subsection{Conceptos basicos de directorios}
+Para poder acceder a los archivos con facilidad, se crean formas de organizar los nombres de los archivos, son los directorios.
+
+\textit{Que es un directorio: Es un objeto que relaciona el nombre del usuario de un archivo y el descriptor interno del mismo.}
+
+Caracteristicas de los directorios:
+
+\begin{itemize}
+	\item Actualmente los sistemas operativos se organizan en forma de arbol, que representa los directorios y subdirectorios partiendo de una raiz de forma que existe un unico camino a un archivo.
+	\item Para solventar la problematica de que varios usuarios quieran trabajar sobre el mismo archivo (pero tienen rutas hasta el distintas), se generaliza de arbol a grafo aciclico.
+	\item La forma mas habitual de compartir archivos es crear un \textbf{enlace} , que puede ser fisico o simbolico. La diferencia es que mientras que uno apunta al mismo archivo el otro crea una copia de los contenidos en uno nuevo.
+	\item En UNIX se utilizan los \textbf{i-nodos} para saber cuantos enlaces fisicos tiene un mismo archivo. Esto provoca que haya que controlar los bucles al recorrer todo el arbol e introduce problemas al borrarlos (se solventa disminuyendo el contador, y hasta que no sea 0, no se borra del todo)
+	\item Cuando estamos trabajando desde algun directorio y nos queremos mover o referir a otro directorio o archivo, el sistema operativo ha de tener en cuenta que las \textbf{referencias} que hagamos pueden ser \textbf{absolutas (desde la raiz)} o \textbf{relativas}. Ver ls -a . y ..
+\end{itemize}
+
+\subsection{Servicios de archivos y directorios}
+
+Cuando abrimos un archivo, lo que obtenemos es un \textbf{descriptor de archivo} que en UNIX se conoce como \textbf{i-nodo}. Por ejemplo, para la salida estandar hay unos descritores fijos: 0-in, 1-out, 2-err. Los inodos contienen todos los atributos que nos interesaran para nuestro estudio.\par
+Permisos de acceso: bits: setuid(ejecutable-user), setgid(ejecutable-grupo), rwx(user), rwx(grupo), rwx(resto). \par
+
 \section{Procesos}
 
 \subsection{Conceptos basicos}
