@@ -131,6 +131,33 @@ Caracteristicas de los directorios:
 Cuando abrimos un archivo, lo que obtenemos es un \textbf{descriptor de archivo} que en UNIX se conoce como \textbf{i-nodo}. Por ejemplo, para la salida estandar hay unos descritores fijos: 0-in, 1-out, 2-err. Los inodos contienen todos los atributos que nos interesaran para nuestro estudio.\par
 Permisos de acceso: bits: setuid(ejecutable-user), setgid(ejecutable-grupo), rwx(user), rwx(grupo), rwx(resto). \par
 
+Servicios POSIX para ficheros:
+\begin{itemize}
+	\item Crear y abrir un fichero: \texttt{int creat(const char * path, mode\_t mode);}
+	\item Borrar un fichero por su ruta: \texttt{int ulink(const char * path);}
+	\item Abrir un fichero por su ruta en un determinado modo: \texttt{int open(const char path, int oflag, mode\_t mode);}
+	\item Cerrar un fichero por su descriptor (devuelto por alguna de las funciones anteriores): \texttt{int close(int fd);}
+	\item Leer \textbf{nbytes} de un archivo a \textbf{buf}: \texttt{ssize\_t read(int fd, void *buf, size\_t nbytes);}
+	\item Escribir \textbf{nbytes} de \textbf{buf} a un archivo: \texttt{ssize\_t write(int fd, const void *buf, size\_t nbytes);}
+	\item Mover el apuntador de posiciono de un archivo \textbf{offset} desde \textbf{whence} que puede tomar los valores: SEEK\_SET (inicio), SEEK\_CURR (posicion actual) y SEEK\_END: \texttt{off\_t lseek(int fd, off\_t offset, int whence);}
+	\item Consultar atributos de un archivo: \texttt{ int stat(const char *path, struct stat *buf);} , devuelven una estructura de tipo stat (ver esta estructura para saber que atributos podemos obtener a partir de esta llamada)
+\end{itemize}
+
+Servicios POSIX para directorios:
+\begin{itemize}
+	\item Crear un directorio: \texttt{ int mkdir(const char * path, mode\_t mode)}
+	\item Borrar un directorio ( solo se puede borrar si esta vacio ): \texttt{ int rmdir(const char * path)}
+	\item Abrir un directorio: \texttt{ DIR * opendir(const char * pathname)}
+	\item Cerrar un directorio: \texttt{ int closedir(DIR * dirp);}
+	\item Leer la siguiente entrada de un directorio (nombre del archivo e i-nodo): \texttt{struct dirent *readdir(DIR * dirp);}
+	\item Comprobar si un archivo en un directorio esta accesible con unos ciertos permisos: \texttt{int access( const char * path, int amode );}
+	\item Cambiar los permisos sobre un archivo: \texttt{int chmod(const char * path, mode\_t mode);}
+	\item Cambiar el propietario y el grupo de un archivo: \texttt{ int chown(const char * path, uid\_t owner, gid\_t group);}
+	\item Definir una mascara que sera aplicada por defecto a todos los objetos de un usuario: \texttt{ mode\_t umask(mode\_t cmask);}
+	\item Establecer un enlace fisico entre una nueva entrada de directorio y un archivo ya existente: \texttt{ int link(const char * existing, const char * new);}
+	\item Establecer un enlace simbolico desde una nueva entrada de directorio a un archivo ya existente: \texttt{ int symlink( const char * existing, const char * new);}
+\end{itemize}
+
 \section{Procesos}
 
 \subsection{Conceptos basicos}
