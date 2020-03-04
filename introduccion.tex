@@ -174,6 +174,8 @@ El BCP contiene la siguiente informacion:
 
 \subsection{threads}
 
+Un determinado proceso puede comenzar a crear hilos y por tanto a desdoblarse, esto implica que la imagen de memoria del proceso original se va a compartir entre desitintos procesos, la imagen de memoria no se replica como en el fork. De esta forma conseguimos una ventaja importante con respecto a los recursos del sistema. Lo que se comparte y no se comparte, se explica mas abajo.\par
+
 Un proceso puede contener varios threads, o hilos de ejecucion que comparten algunos recursos e informacion entre ellos.\par
 
 Cada thread se define como una funcion que se puede lanzar en paralelo con otras.\par
@@ -192,6 +194,12 @@ Las senales pueden provenir o bien de un proceso que la manda a otro proceso con
 Hay muchas senales diferentes y se engloban en tres tipos fundamentales: De hardware, de comunicacion y de E/S asincrona.\par
 
 Para que un proceso pueda enviar una senal ha de estar preparado para recibirla. Para ello tenemos que indicarle al SO el nombre de la rutina del proceso que ha de tratar ese tipo de senal. Si un proceso recibe una senal sin estar preparado para ello, se suele matar al proceso.
+
+Podemos utilizar las senales como el mecanismo mas sencillo de pasar informacion entre procesos, esto es extremadamente rudimentario, pero se puede usar. Asi, podriamos usar \textit{kill -2 pid} donde pid es el pid de un proceso que esta actualmente activo, y -2 tiene el mismo comportamiento que el control-c. \par
+
+Manejadores de senales: podemos usar la funcion signal para capturar una determinada senal y cambiar el comportamiento que tiene por defecto. Esto se hace con la funcion \textit{signal} \par
+
+Para poder mandar senales a algun proceso tenemos que ser los que lo creamos.
 
 \subsection{Servicios de procesos}
 

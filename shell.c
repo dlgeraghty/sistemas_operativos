@@ -35,10 +35,10 @@ const char * search_path(char * s){
 }
 
 int main(int argc, char * argv[], char * envp[]){
-	char in[100];
-	char buf[100];
 	char *tokens[100]={NULL};
 	prompt();
+	char buf[100];
+	char in[100];
 	while(fgets(buf, 100, stdin)){
 		sscanf(buf, "%[^\n]", in);
 		char * token = strtok(in, " ");
@@ -49,17 +49,17 @@ int main(int argc, char * argv[], char * envp[]){
 			token = strtok(NULL, " ");
 			i++;
 		}
-		//for(int x = 0; x < i; x++)printf("%d\t%s\n", x,tokens[x]);
 		char * path_to_program = search_path(tokens[0]);
 		if(path_to_program != NULL) tokens[0] = path_to_program;
+		for(int x = 0; x < i; x++)printf("%d\t%s\n", x,tokens[x]);
+		tokens[i] = NULL;
 		int pid = fork();
 		if(pid == 0){
 			if(execv(tokens[0], tokens))perror("exec");
 		}else{
 			wait(NULL);
-			kill(pid, SIGKILL);
 			prompt();
 		}
-	}
+}
 	return 0;
 }
