@@ -51,7 +51,7 @@ int main(int argc, char * argv[], char * envp[]){
 		}
 		char * path_to_program = search_path(tokens[0]);
 		if(path_to_program != NULL) tokens[0] = path_to_program;
-		for(int x = 0; x < i; x++)printf("%d\t%s\n", x,tokens[x]);
+		//for(int x = 0; x < i; x++)printf("%d\t%s\n", x,tokens[x]);
 		tokens[i] = NULL;
 		int pid = fork();
 		if(pid == 0){
