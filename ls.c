@@ -1,28 +1,43 @@
-/* print files in current directory in reverse order */
 #include <stdlib.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-int
-main(int argc, int *argv[])
+const char * fifo = "/tmp/ls_indentation";
+
+int read_from_fifo(){
+	int x;
+	char str[100];
+	int fd = open(fifo, O_RDONLY);
+	if(fd == -1) perror("open:");
+	read(fd, str, 100);
+	close(fd);
+	//string to int:
+	sscanf(str, "%d", &x);
+	//printf("contenido del fifo: %s\n", str);
+	return x;
+}
+
+int main(int argc, int *argv[])
 {
+
+	int z = read_from_fifo();
     struct dirent **namelist;
     int n;
 
+    //printf("[DEBUG][directorio:] %s\n" , argv[1]);
+    printf("%*s", z+4, "");
     if(argc == 2){
    n = scandir(argv[1], &namelist, NULL, alphasort);
     if (n < 0)
         perror("scandir");
     else {
-        while (n--) {
-	    struct stat sb;
-	    if(stat(namelist[n]->d_name, &sb)) perror("stat");
-	    else{
-	    	printf("Name: %s, i-node number: %ld, mode: %lo (octal), size: %lld\n", namelist[n]->d_name, (long) sb.st_ino, (unsigned long) sb.st_mode, (long)sb.st_size);
-	    }
-            free(namelist[n]);
+        for (int i = 0; i < n; i++) {
+		printf("\033[1;31m %s \033[0m", namelist[i]->d_name);
+	    free(namelist[i]);
         }
         free(namelist);
     }
