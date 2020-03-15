@@ -43,10 +43,14 @@ int main(int argc, char **argv){
 	for( ; ; ){
 		struct sockaddr_in addr;
 		socklen_t addr_len;
+		char client_address[MAXLINE+1];
 
 		printf("waining for a connection on port %d\n", SERVER_PORT);
 		fflush(stdout);
-		connfd = accept(listenfd, (SA*) NULL, NULL);
+		connfd = accept(listenfd, (SA*) &addr, &addr_len);
+
+		inet_ntop(AF_INET, &addr, client_address, MAXLINE);
+		printf("Client connection: %s\n", client_address);
 
 		memset(recvline, 0, MAXLINE);
 		while((n = read(connfd, recvline, MAXLINE-1)) > 0){
