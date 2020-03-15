@@ -10,14 +10,18 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/time.h>
+#include <pthread.h>
+
+//source tutorial: (must see): https://www.youtube.com/watch?v=Pg_4Jz8ZIH4
 
 #define SERVER_PORT 18000	//server port we are connecting to
 #define MAXLINE 4096		//just some buffer size
 #define SA struct sockaddr	//shorthand to type less xD
+#define SERVER_BACKLOG	100	//number of requests the server will stack till it starts rejecting
 
 void err_n_die(const char *fmt, ...);
 char *bin2hex(const unsigned char * , size_t);
-void handle_connection(int client_socket);
+void * handle_connection(void * client_socket);
 
 int main(int argc, char **argv){
 	int			listenfd, connfd, n, addr_size;
@@ -38,7 +42,7 @@ int main(int argc, char **argv){
 	if((bind(listenfd, (SA*) &servaddr, sizeof(servaddr))) < 0)
 		err_n_die("bind error");
 
-	if((listen(listenfd, 10)) < 0)
+	if((listen(listenfd, SERVER_BACKLOG)) < 0)
 		err_n_die("listen error");
 
 	for( ; ; ){
@@ -47,13 +51,18 @@ int main(int argc, char **argv){
 		addr_size = sizeof(struct sockaddr_in);
 		connfd = accept(listenfd, (SA*) &clientaddr, (socklen_t *)&addr_size);
 
-		handle_connection(connfd);
+		pthread_t t;
+		int *pclient = malloc(sizeof(int));
+		*pclient = connfd;
+		pthread_create(&t, NULL, handle_connection, pclient);
 
 	}
 	return 0;
 }
 
-void handle_connection(int client_socket){
+void * handle_connection(void * p_client_socket){
+	int client_socket = *((int *)p_client_socket);
+	free(p_client_socket);
 	char buffer[MAXLINE];
 	size_t bytes_read;
 	int msg_size = 0;
@@ -72,14 +81,14 @@ void handle_connection(int client_socket){
 	if(realpath(buffer, actualpath) == NULL){
 		printf("ERROR: bad path: %s\n" , buffer);
 		close(client_socket);
-		return;
+		return NULL;
 	}
 
 	FILE *fp = fopen(actualpath, "r");
 	if(fp == NULL){
 		printf("ERROR(open): %s\n", buffer);
 		close(client_socket);
-		return;
+		return NULL;
 	}
 
 	while((bytes_read = fread(buffer, 1, MAXLINE, fp)) > 0){
@@ -90,6 +99,7 @@ void handle_connection(int client_socket){
 	fclose(fp);
 	printf("closing connection");
 
+	return NULL;
 }
 
 char *bin2hex(const unsigned char * input, size_t len){
