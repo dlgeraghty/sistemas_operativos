@@ -17,10 +17,11 @@
 
 void err_n_die(const char *fmt, ...);
 char *bin2hex(const unsigned char * , size_t);
+void handle_connection(int client_socket);
 
 int main(int argc, char **argv){
-	int			listenfd, connfd, n;
-	struct sockaddr_in	servaddr;
+	int			listenfd, connfd, n, addr_size;
+	struct sockaddr_in	servaddr, clientaddr;
 	uint8_t			buff[MAXLINE+1];
 	uint8_t			recvline[MAXLINE+1];
 
@@ -41,32 +42,54 @@ int main(int argc, char **argv){
 		err_n_die("listen error");
 
 	for( ; ; ){
-		struct sockaddr_in addr;
-		socklen_t addr_len;
-		char client_address[MAXLINE+1];
 
 		printf("waining for a connection on port %d\n", SERVER_PORT);
-		fflush(stdout);
-		connfd = accept(listenfd, (SA*) &addr, &addr_len);
+		addr_size = sizeof(struct sockaddr_in);
+		connfd = accept(listenfd, (SA*) &clientaddr, (socklen_t *)&addr_size);
 
-		inet_ntop(AF_INET, &addr, client_address, MAXLINE);
-		printf("Client connection: %s\n", client_address);
+		handle_connection(connfd);
 
-		memset(recvline, 0, MAXLINE);
-		while((n = read(connfd, recvline, MAXLINE-1)) > 0){
-			fprintf(stdout, "\n%s\n\n%s", bin2hex(recvline, n), recvline);
-			if(recvline[n-1] == '\n') break;
-			memset(recvline, 0, MAXLINE);
-		}
-		if(n < 0)
-			err_n_die("read error");
-
-		//send a response:
-		snprintf((char *)buff, sizeof(buff), "HTTP/1.0 200 OK\r\n\r\nHello");
-		write(connfd, (char *)buff, strlen((char *)buff));
-		close(connfd);
 	}
 	return 0;
+}
+
+void handle_connection(int client_socket){
+	char buffer[MAXLINE];
+	size_t bytes_read;
+	int msg_size = 0;
+	char actualpath[MAXLINE+1];
+
+	while((bytes_read = read(client_socket, buffer+msg_size, sizeof(buffer)-msg_size-1)) > 0){
+		msg_size += bytes_read;
+		if(msg_size > MAXLINE-1 || buffer[msg_size-1] == '\n') break;
+	}
+	if(bytes_read < 0) err_n_die("recv error");
+	buffer[msg_size-1] = 0;
+
+	printf("REQUEST: %s\n", buffer);
+	fflush(stdout);
+
+	if(realpath(buffer, actualpath) == NULL){
+		printf("ERROR: bad path: %s\n" , buffer);
+		close(client_socket);
+		return;
+	}
+
+	FILE *fp = fopen(actualpath, "r");
+	if(fp == NULL){
+		printf("ERROR(open): %s\n", buffer);
+		close(client_socket);
+		return;
+	}
+
+	while((bytes_read = fread(buffer, 1, MAXLINE, fp)) > 0){
+		printf("sending %zu bytes\n" , bytes_read);
+		write(client_socket, buffer, bytes_read);
+	}
+	close(client_socket);
+	fclose(fp);
+	printf("closing connection");
+
 }
 
 char *bin2hex(const unsigned char * input, size_t len){
