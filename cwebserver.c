@@ -21,6 +21,7 @@
 #define THREAD_POOL_SIZE 20	//max number of threads
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
 struct node {
 	struct node * next;
@@ -78,6 +79,7 @@ int main(int argc, char **argv){
 		//thread-safe:
 		pthread_mutex_lock(&mutex);
 		enqueue(pclient);
+		pthread_cond_signal(&condition_var);
 		pthread_mutex_unlock(&mutex);
 
 	}
@@ -86,8 +88,12 @@ int main(int argc, char **argv){
 
 void * thread_function(void * args){
 	while(1){			//todo:add some sort of termination to this loop
+		int * pclient;
 		pthread_mutex_lock(&mutex);
-		int *pclient = dequeue();
+		if((pclient = dequeue()) == NULL){
+			pthread_cond_wait(&condition_var, &mutex);
+			pclient = dequeue();
+		}
 		pthread_mutex_unlock(&mutex);
 		if(pclient != NULL){
 			handle_connection(pclient);
