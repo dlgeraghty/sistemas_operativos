@@ -18,16 +18,38 @@
 #define MAXLINE 4096		//just some buffer size
 #define SA struct sockaddr	//shorthand to type less xD
 #define SERVER_BACKLOG	100	//number of requests the server will stack till it starts rejecting
+#define THREAD_POOL_SIZE 20	//max number of threads
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+struct node {
+	struct node * next;
+	int * client_socket;
+};
+typedef struct node node_t;
+
+node_t * head = NULL;
+node_t * tail = NULL;
+
+pthread_t thread_pool[THREAD_POOL_SIZE];
 
 void err_n_die(const char *fmt, ...);
 char *bin2hex(const unsigned char * , size_t);
 void * handle_connection(void * client_socket);
+void * thread_function(void * args);
+void enqueue(int *client_socket);
+int *dequeue();
 
 int main(int argc, char **argv){
 	int			listenfd, connfd, n, addr_size;
 	struct sockaddr_in	servaddr, clientaddr;
 	uint8_t			buff[MAXLINE+1];
 	uint8_t			recvline[MAXLINE+1];
+
+	//crea los threads:
+	for(int i = 0; i < THREAD_POOL_SIZE; i++){
+		pthread_create(&thread_pool[i], NULL, thread_function, NULL);
+	}
 
 	if((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)	//try to create a new soket
 		err_n_die("socket error");
@@ -51,13 +73,26 @@ int main(int argc, char **argv){
 		addr_size = sizeof(struct sockaddr_in);
 		connfd = accept(listenfd, (SA*) &clientaddr, (socklen_t *)&addr_size);
 
-		pthread_t t;
-		int *pclient = malloc(sizeof(int));
+		int * pclient = malloc(sizeof(int));
 		*pclient = connfd;
-		pthread_create(&t, NULL, handle_connection, pclient);
+		//thread-safe:
+		pthread_mutex_lock(&mutex);
+		enqueue(pclient);
+		pthread_mutex_unlock(&mutex);
 
 	}
 	return 0;
+}
+
+void * thread_function(void * args){
+	while(1){			//todo:add some sort of termination to this loop
+		pthread_mutex_lock(&mutex);
+		int *pclient = dequeue();
+		pthread_mutex_unlock(&mutex);
+		if(pclient != NULL){
+			handle_connection(pclient);
+		}
+	}
 }
 
 void * handle_connection(void * p_client_socket){
@@ -139,4 +174,29 @@ void err_n_die(const char * fmt, ...){
 	}
 	va_end(ap);
 	exit(1);
+}
+
+void enqueue(int *client_socket){
+	node_t *newnode = malloc(sizeof(node_t));
+	newnode->client_socket = client_socket;
+	newnode->next = NULL;
+	if(tail == NULL){
+		head = newnode;
+	} else {
+		tail->next = newnode;
+	}
+	tail = newnode;
+}
+
+int *dequeue(){
+	if(head == NULL){
+		return NULL;
+	} else {
+		int * result = head->client_socket;
+		node_t *temp = head;
+		head = head->next;
+		if(head == NULL) tail = NULL;
+		free(temp);
+		return result;
+	}
 }
