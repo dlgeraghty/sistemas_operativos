@@ -55,10 +55,26 @@ int main(int argc, char **argv){
 
 	//get the response from the server:
 	memset(recvline, 0, MAXLINE);
+
+	//get the filename for storage: (it will be the last token)
+	char *token = strtok(file_path, "/");
+	char file_name[100];
+	while(token != NULL){
+		token = strtok(NULL, "/");
+		if(token != NULL) strcpy(file_name, token);
+	}
+	printf("the filename is: %s\n", strtok(file_name, "$"));
+	int fdout;
+	if((fdout = creat(file_name, 0644)) < 0)return -1;
+
 	while(( n = read(sockfd, recvline, MAXLINE-1)) > 0){
-		printf("%s", recvline);
+		if(write(fdout,recvline, n) < n){
+			close(fdout);
+			return -1;
+		}
 		memset(recvline, 0, MAXLINE);
 	}
+	close(fdout);
 	if(n < 0)
 		err_n_die("read error");
 
