@@ -1,5 +1,6 @@
 // Producto vectorial.
 // Francisco D. Igual.
+// David Lopez
 
 #include <stdio.h>
 #include <sys/time.h>
@@ -10,7 +11,7 @@
 
 #define N 10
 
-#define IMPRIME 1
+#define IMPRIME 0
 
 // Vectores de entrada para operar.
 double * vector1;
@@ -30,6 +31,9 @@ int tam;
 
 // Numero de hilos.
 int num_hilos;
+
+// Mutex para asegurar que no haya problemas de sincronizacion:
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Vector con valor númerico (1...num_hilos) para identificar orden de hilo.
 int * id_hilos;
@@ -80,7 +84,8 @@ void * pvec_trozo( void * arg )
   // COMPLETAR. Recibe un valor entero entre 0 y num_hilos y realiza la operación
   // sobre los elementos correspondientes del vector.
   int i, chunk;
-  int numero_hilo = 0/* COMPLETAR */;
+  int numero_hilo = *((int *)arg);
+  free(arg);
 
   int ini, fin, num_valores;
 
@@ -92,7 +97,13 @@ void * pvec_trozo( void * arg )
   printf( "Thread %ld activo con id %d. Sumara %d valores, desde %d hasta %d\n", pthread_self(), numero_hilo, num_valores, ini, fin );
 
   // COMPLETAR. Operación
-
+  //garantizar exclusion mutua:
+  pthread_mutex_lock(&mutex);
+  for(i = ini; i < fin; i++){
+	  vector4[i] = vector1[i] * vector2[i];
+  }
+  pthread_mutex_unlock(&mutex);
+  return NULL;
 }
 
 
@@ -100,16 +111,22 @@ void * pvec_trozo( void * arg )
 void pvec_paralelo( double * a, double * b, double * c, int n, int num_hilos )
 {
 	int i = 0;
+	//printf("with %d elements and %d threads, each thread should hold %d elements \n", n, num_hilos, n/num_hilos);
 
 	// COMPLETAR. Creamos cada hilo e invocamos a pvec_trozo como punto de entrada
 	// Proporcionamos un identificador entre 0 y num_hilos para cada nuevo hilo.
+	pthread_t t[num_hilos];
 	for( i = 0; i < num_hilos; i++ )
 	{
+		int * numero_hilo = malloc(sizeof(int));
+		*numero_hilo = i;
+		pthread_create(&t[i], NULL, pvec_trozo, numero_hilo);
 	}
 
 	// COMPLETAR. Esperamos a la finalización de los hilos.
 	for( i = 0; i < num_hilos; i++ )
 	{
+		pthread_join(t[i], NULL);
 	}
 }
 
@@ -129,8 +146,6 @@ void pvec_secuencial( double * a, double * b, double * c, int n )
 int main( int argc, char * argv[] )
 {
 	int i;
-
-        long unsigned int tic, toc;
 
 	if( argc != 3 )
 	{
@@ -193,7 +208,7 @@ int main( int argc, char * argv[] )
 	clock_gettime(CLOCK_MONOTONIC, &start);
 	pvec_paralelo( vector1, vector2, vector4, tam, num_hilos );
 	clock_gettime(CLOCK_MONOTONIC, &end);
-	printf( "Fin suma secuencial. Tiempo (en nanosegundos): %lu\n", (end.tv_nsec-start.tv_nsec));
+	printf( "Fin suma paralela. Tiempo (en nanosegundos): %lu\n", (end.tv_nsec-start.tv_nsec));
 
 #if IMPRIME
 	imprime_vector( vector4, tam );
