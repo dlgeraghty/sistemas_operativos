@@ -34,16 +34,6 @@ int num_hilos;
 // Vector con valor númerico (1...num_hilos) para identificar orden de hilo.
 int * id_hilos;
 
-double tiempo()
-{
-  // COMPLETAR. Debe retornar una marca de tiempo en milisegundos.
-	//pensaba en usar el timestamp de unix, pero he visto que era double
-	//e investigando he encontrado la funcion clock();
-	clock_t t;
-	t = clock();
-	return t;
-}
-
 int check( double * a, double *b, double n )
 {
   int i = 0;
@@ -140,7 +130,7 @@ int main( int argc, char * argv[] )
 {
 	int i;
 
-        double tic, toc;
+        long unsigned int tic, toc;
 
 	if( argc != 3 )
 	{
@@ -188,20 +178,22 @@ int main( int argc, char * argv[] )
 #endif
 
 	printf( "Suma secuencial\n" );
-	tic = tiempo();
+	struct timespec start, end;
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	pvec_secuencial( vector1, vector2, vector3, tam );
-	toc = tiempo();
-	printf( "Fin suma secuencial. Tiempo: %f\n", (toc-tic)/CLOCKS_PER_SEC);
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	//printf("tiempo antes: %lu, tiempo despues: %lu\n", start.tv_nsec, end.tv_nsec);
+	printf( "Fin suma secuencial. Tiempo (en nanosegundos): %lu\n", (end.tv_nsec-start.tv_nsec));
 
 #if IMPRIME
 	imprime_vector( vector3, tam );
 #endif
 
 	printf( "Suma paralela\n" );
-	tic = tiempo();
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	pvec_paralelo( vector1, vector2, vector4, tam, num_hilos );
-	toc = tiempo();
-	printf( "Fin suma paralela. Tiempo: %f\n", (toc - tic)/CLOCKS_PER_SEC);
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	printf( "Fin suma secuencial. Tiempo (en nanosegundos): %lu\n", (end.tv_nsec-start.tv_nsec));
 
 #if IMPRIME
 	imprime_vector( vector4, tam );
