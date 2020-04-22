@@ -20,9 +20,9 @@ type_turno turno = IMPARES;
 // MUTEX m
 pthread_mutex_t m;
 // VC vcImpares, vcPares, vcConsumidor
-pthread_cond_t cvImpares;
-pthread_cond_t cvPares;
-pthread_cond_t cvConsumidor;
+pthread_cond_t cvImpares = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cvPares = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cvConsumidor = PTHREAD_COND_INITIALIZER;
 
 void *Impares(void *data){
   int i;
@@ -100,6 +100,8 @@ void *Consumidor(void *data){
 int main(int argc, char *argv[]) {
   pthread_t pTh_par, pTh_impar, pTh_cons;
 
+  pthread_mutex_init(&m, NULL);
+
   pthread_create(&pTh_par,   NULL, Pares,      NULL);
   pthread_create(&pTh_impar, NULL, Impares,    NULL);
   pthread_create(&pTh_cons,  NULL, Consumidor, NULL);
@@ -107,6 +109,9 @@ int main(int argc, char *argv[]) {
   pthread_join(pTh_par,   NULL);
   pthread_join(pTh_impar, NULL);
   pthread_join(pTh_cons,  NULL);
+
+  pthread_cond_destroy(&cvImpares); pthread_cond_destroy(&cvPares); pthread_cond_destroy(&cvConsumidor);
+  pthread_mutex_destroy(&m);
 
   exit(0);
 }
