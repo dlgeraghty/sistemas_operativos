@@ -10,11 +10,16 @@ typedef struct{
 void barrier_wait(barrier_t * b){
 
 	pthread_mutex_lock(&(b->mtx));
-	b->i--;
-	if(b->i > 0)
+	if(b->i > 0){
+		b->i--;
+		//printf("valor de i: %d\n", b->i);
 		pthread_cond_wait(&(b->cond), &(b->mtx));
-	else
+	}
+	else{
 		pthread_cond_broadcast(&(b->cond));
+		//printf("voy a hacer el broadcast, por que i es: %d\n", b->i);
+	}
+
 	pthread_mutex_unlock(&(b->mtx));
 }
 
@@ -28,9 +33,9 @@ void barrier_init(barrier_t * b, barrier_t * d, int val){
 		b->mtx = d->mtx;
 		b->cond = d->cond;
 	}else{
-		b->i = val;
 		pthread_mutex_init(&(b->mtx), NULL);
 		pthread_cond_init(&(b->cond), NULL);
+		b->i = val - 1;
 	}
 
 }

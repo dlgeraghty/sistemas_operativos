@@ -5,7 +5,7 @@
 #include <time.h>
 #include "barrera.h"
 
-#define DEBUG 0 
+#define DEBUG 1
 
 int NELEMS, NTHREADS;
 barrier_t mybarrier;
@@ -57,7 +57,7 @@ int main(){
 	if(DEBUG)printf("Contenido del vector:\n");
 	for(int i = 0; i < NELEMS; i++){
 		elementos[i] = rand() % 101;
-		if(DEBUG)printf("%d ", elementos[i]);
+		//printf("%d ", elementos[i]);
 		res_secuencial += elementos[i];
 	}
 
@@ -75,7 +75,6 @@ int main(){
 			pthread_create(&ids[i], NULL, parallel_sum, &short_ids[i]);
 		}
 		barrier_wait(&mybarrier);
-		barrier_destroy(&mybarrier);
 
 		barrier_init(&mybarrier, NULL, NTHREADS + 1);
 		for(int i = 0; i < NTHREADS; i++){
@@ -83,7 +82,6 @@ int main(){
 			pthread_create(&ids[i], NULL, copy_arrays, &short_ids[i]);
 		}
 		barrier_wait(&mybarrier);
-		barrier_destroy(&mybarrier);
 
 		NELEMS = NTHREADS;
 		NTHREADS/=2;
