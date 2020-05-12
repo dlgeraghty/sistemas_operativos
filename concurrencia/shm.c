@@ -33,7 +33,7 @@ void producer(void){
 	sem_wait(full);
 	//generate random number:
 	int r = random();
-	char * rs;
+	char rs[100];
 	sprintf(rs, "%d", r);
 	strcat(rs, "random number generated:");
 
