@@ -24,36 +24,40 @@ sem_t *full, *empty;
 
 void producer(void){
 
-	printf("Inicializando productor\n");
+	while(1){
+		printf("Inicializando productor\n");
 
-	void * ptr;
-	ptr = mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0);
+		void * ptr;
+		ptr = mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
 
-	sem_wait(full);
-	//generate random number:
-	int r = random();
-	char rs[100];
-	sprintf(rs, "%d", r);
-	strcat(rs, "random number generated:");
+		sem_wait(full);
+		//generate random number:
+		int r = random();
+		char rs[100];
+		sprintf(rs, "%d", r);
+		strcat(rs, "random number generated:");
 
-	sprintf(ptr, "%s", rs); 
-	ptr += strlen(rs);
-	sem_post(empty);
+		sprintf(ptr, "%s", rs); 
+		ptr += strlen(rs);
+		sem_post(empty);
+	}
 	
 }
 
 void consumer(void){
 
-	printf("Inicializando consumidor\n");
+	while(1){
+		printf("Inicializando consumidor\n");
 
-	sem_wait(empty);
-	void * ptr;
+		sem_wait(empty);
+		void * ptr;
 
-	ptr = mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
+		ptr = mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
 
-	printf("%s\n", (char*)ptr);
-	sem_post(full);
+		printf("Numero consumido: %s\n", (char*)ptr);
+		sem_post(full);
+	}
 
 
 }
