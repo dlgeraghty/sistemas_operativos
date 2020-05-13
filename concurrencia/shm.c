@@ -13,7 +13,8 @@
 //but it uses fork and functions in the same file to make it happen rather than a file per use case.
 //Now it also implements the real producer consumer problem
 
-const int SIZE		=	4096;
+const int SIZE		=	4906;
+const int PROD 		=	10;
 const char * name	=	"OS";
 const char * full_name	=	"full";
 const char * empty_name	=	"empty";
@@ -24,22 +25,22 @@ sem_t *full, *empty;
 
 void producer(void){
 
-	while(1){
-		printf("Inicializando productor\n");
+	printf("Inicializando productor\n");
 
-		void * ptr;
-		ptr = mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0);
+	void * ptr;
+	ptr = mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
-
+	for(int i = 0; i < PROD; i++){
 		sem_wait(full);
 		//generate random number:
 		int r = random();
 		char rs[100];
 		sprintf(rs, "%d", r);
 		strcat(rs, "random number generated:");
+		ptr += strlen(rs);
 
 		sprintf(ptr, "%s", rs); 
-		ptr += strlen(rs);
+
 		sem_post(empty);
 	}
 	
@@ -47,14 +48,14 @@ void producer(void){
 
 void consumer(void){
 
-	while(1){
-		printf("Inicializando consumidor\n");
+	printf("Inicializando consumidor\n");
 
+	void * ptr;
+
+	ptr = mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
+
+	for(int i = 0; i < PROD; i++){
 		sem_wait(empty);
-		void * ptr;
-
-		ptr = mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
-
 		printf("Numero consumido: %s\n", (char*)ptr);
 		sem_post(full);
 	}
@@ -64,7 +65,7 @@ void consumer(void){
 
 int main(){
 
-	full = sem_open(full_name, O_CREAT, 10);
+	full = sem_open(full_name, O_CREAT, 1);
 	empty = sem_open(empty_name, O_CREAT, 0);
 	
 	if(full == SEM_FAILED){
