@@ -43,6 +43,8 @@ int main(int argc, char * args[]){
 	hilos		=	N;
 	shm_fd		=	shm_open(name, O_CREAT|O_RDWR, 0666);
 	mtx		=	sem_open(sem_name, O_CREAT, 1);
+
+	sem_init(mtx, 1, 1);
 	
 	//fill vector with random numbers using the datos structure and calculate the sequential sum and print it:
 	printf("el vector es: \n");
@@ -76,11 +78,12 @@ void producto(void * args, sem_t * x){
 
 	datos d = (*(datos*)args);
 
-	//resultado += d.a * d.b;
+//	resultado += d.a * d.b;
 	
-//	sem_wait(x);
+	
+	sem_wait(x);
 	printf("my arguments are: %d and %d\n", d.a, d.b);
-//	sem_post(x);
+	sem_post(x);
 
 	exit(0);
 }
