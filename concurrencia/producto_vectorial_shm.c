@@ -1,13 +1,15 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <sys/wait.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <pthread.h>
 #include <sys/shm.h>
+#include <sys/wait.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <semaphore.h>
+#include <sys/types.h>
 
 typedef struct{
 	int a, b;
@@ -20,6 +22,10 @@ sem_t * mtx;
 int shm_fd;
 
 void producto(void * , sem_t * );
+
+struct shared_data{
+	int data;
+};
 
 int main(int argc, char * args[]){
 
@@ -45,6 +51,7 @@ int main(int argc, char * args[]){
 	mtx		=	sem_open(sem_name, O_CREAT, 1);
 
 	sem_init(mtx, 1, 1);
+	ftruncate(shm_fd, sizeof(struct shared_data));
 	
 	//fill vector with random numbers using the datos structure and calculate the sequential sum and print it:
 	printf("el vector es: \n");
@@ -57,13 +64,17 @@ int main(int argc, char * args[]){
 	}
 	printf("\n");
 
+	//"initialize" the shm value, in this case, just put a 0 in it
+	struct shared_data * ptr = (struct shared_data *) mmap(0, sizeof(shared_data), PROT_WRITE, MAP_SHARED, shm_fd, 0);
+	ptr->data = 0;
 
 	for(int i = 0; i < N; i++)
 		if(fork() == 0)
 			producto(&vector[i], mtx);
 		
 	while(wait(NULL)>0);
-	printf("el resultado paralelo es: %d y el resultado secuencial es: %d\n", 0, sequential);
+	ptr = (struct shared_data *) mmap(0, sizeof(shared_data), PROT_WRITE, MAP_SHARED, shm_fd, 0);
+	printf("el resultado paralelo es: %d y el resultado secuencial es: %d\n", ptr->data, sequential);
 
 	//free resources:
 	free(vector);
@@ -78,11 +89,11 @@ void producto(void * args, sem_t * x){
 
 	datos d = (*(datos*)args);
 
-//	resultado += d.a * d.b;
-	
+	struct shared_data * ptr = (struct shared_data *) mmap(0, sizeof(shared_data), PROT_WRITE, MAP_SHARED, shm_fd, 0);
 	
 	sem_wait(x);
 	printf("my arguments are: %d and %d\n", d.a, d.b);
+	ptr->data++;
 	sem_post(x);
 
 	exit(0);
