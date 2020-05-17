@@ -59,8 +59,7 @@ int main(int argc, char * args[]){
 		vector[i].a = rand() % R;
 		vector[i].b = rand() % R;
 		printf("%d*%d + ", vector[i].a , vector[i].b);
-	//	sequential += vector[i].a * vector[i].b;
-		sequential += i;
+		sequential += vector[i].a * vector[i].b;
 	}
 	printf("\n");
 
@@ -93,7 +92,7 @@ void producto(void * args, sem_t * x){
 	
 	sem_wait(x);
 	printf("my arguments are: %d and %d\n", d.a, d.b);
-	ptr->data++;
+	ptr->data += d.a * d.b;
 	sem_post(x);
 
 	exit(0);
