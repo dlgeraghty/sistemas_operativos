@@ -7,7 +7,8 @@
 //based on: http://condor.cc.ku.edu/~grobe/docs/intro-MPI-C.shtml
 
 #define send_data_tag 2001
-#define max_rows 50
+#define return_data_tag 2002
+#define max_rows 10000
 
 int arr[max_rows];
 int arr2[max_rows];
@@ -17,7 +18,7 @@ main(int argc, char ** argv){
 
 	MPI_Status status;
 
-	int i, ierr, root_process, my_id, num_procs, an_id, to_send, to_receive, avg_rows_per_process, start_row, end_row, num_rows_to_send;
+	int i, ierr, root_process, my_id, num_procs, an_id, to_send, to_receive, avg_rows_per_process, start_row, end_row, num_rows_to_send, partial_sum, sum, sender;
 
 	ierr = MPI_Init(&argc, &argv);
 
@@ -63,15 +64,44 @@ main(int argc, char ** argv){
 			ierr = MPI_Send(&arr[start_row], num_rows_to_send, MPI_INT, an_id, send_data_tag, MPI_COMM_WORLD);
 			
 		}
+
+		//calculate the part that corresponds to the master process:
+
+		sum = 0;
+		for(i = 0; i < avg_rows_per_process + 1; i++)
+			sum+=arr[i];
+
+		printf("master result of partial sum %i\n", sum);
+
+		//collect the partial sum of the slave processes:
+		//
+		for(an_id = 1; an_id < num_procs; an_id++){
+
+			ierr = MPI_Recv(&partial_sum, 1, MPI_LONG, MPI_ANY_SOURCE, return_data_tag, MPI_COMM_WORLD, &status);
+
+			sender = status.MPI_SOURCE;
+
+			printf("Partial sum %i returned from process%i\n" , partial_sum, sender);
+
+			sum += partial_sum;
+		}
+		printf("The total is %i\n", sum);
+
 	}else{
 		ierr = MPI_Recv(&to_receive, 1, MPI_INT, root_process, send_data_tag, MPI_COMM_WORLD, &status);
 
 		ierr = MPI_Recv(&arr2, to_receive, MPI_INT, root_process, send_data_tag, MPI_COMM_WORLD, &status);
 
-		printf("I received a message: %d and an array: \n" , to_receive);
-		for(int x = 0; x < to_receive; x++)
-			printf("%d ", arr2[x]);
-		printf("\n");
+//		printf("I received a message: %d and an array: \n" , to_receive);
+
+		partial_sum = 0;
+		for(int x = 0; x < to_receive; x++){
+			partial_sum += arr2[x];
+//			printf("%d ", arr2[x]);
+		}
+		printf("\nCalculating partial sum...the result is: %d, sending it to the master...\n", partial_sum);
+
+		ierr = MPI_Send(&partial_sum, 1, MPI_LONG, root_process, return_data_tag, MPI_COMM_WORLD);
 	}
 	ierr = MPI_Finalize();
 
