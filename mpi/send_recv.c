@@ -3,6 +3,9 @@
 #include <time.h>
 #include <mpi.h>
 
+//to make this run on various machines simultaneously, follow this guide:
+//https://mpitutorial.com/tutorials/running-an-mpi-cluster-within-a-lan/
+
 //simple program to demonstrate the sending and receiving of messages 
 //based on: http://condor.cc.ku.edu/~grobe/docs/intro-MPI-C.shtml
 
