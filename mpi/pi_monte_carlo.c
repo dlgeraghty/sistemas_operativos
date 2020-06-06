@@ -35,7 +35,7 @@ int main(int argc, char ** argv){
 	ierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
 	ierr = MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-	srand(time(NULL) + my_id);
+	srand(time(NULL) * my_id);
 
 	printf("Initializing program with %d processes\n", num_procs);
 
@@ -57,7 +57,7 @@ int main(int argc, char ** argv){
 
 		printf("Calculated my aproximation of pi, is: %10.8f\n", pi);
 
-		//ierr = MPI_Send(&pi, 1, MPI_DOUBLE, my_id, send_data_tag, MPI_COMM_WORLD);
+		ierr = MPI_Send(&pi, 1, MPI_DOUBLE, my_id, send_data_tag, MPI_COMM_WORLD);
 
 	}else{
 
