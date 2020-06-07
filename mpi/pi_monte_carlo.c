@@ -13,9 +13,9 @@
 int inside_circle(double x, double y){
 //	printf("Calculating if inside the circle, with args: %10.8f and %10.8f\n", x, y);
 	if((sqrt(x) + sqrt(y)) <= 1.0)
-		return 1;
-	else 
 		return 0;
+	else 
+		return 1;
 }
 
 int main(int argc, char ** argv){
@@ -35,9 +35,8 @@ int main(int argc, char ** argv){
 	ierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
 	ierr = MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-	srand(time(NULL) * my_id);
+	srand((unsigned)time(NULL) + my_id * num_procs);
 
-	printf("Initializing program with %d processes\n", num_procs);
 
 	num = points/num_procs;
 
@@ -51,11 +50,11 @@ int main(int argc, char ** argv){
 				circle_count++;
 		}
 
-		printf("I got %d points in the circle\n", circle_count);
+		printf("I got %d points in the circle out of %d points \n", circle_count, num);
 
-		pi = 4.0 * (double)circle_count/(double)points;
+		pi = 4.0 * (double)circle_count/(double)num;
 
-		printf("Calculated my aproximation of pi, is: %10.8f\n", pi);
+		printf("Calculated my aproximation of pi, is: %f\n", pi);
 
 		ierr = MPI_Send(&pi, 1, MPI_DOUBLE, my_id, send_data_tag, MPI_COMM_WORLD);
 
