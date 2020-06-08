@@ -56,12 +56,13 @@ int main(int argc, char ** argv){
 
 		printf("Calculated my aproximation of pi, is: %f\n", pi);
 
-		ierr = MPI_Send(&pi, 1, MPI_DOUBLE, my_id, send_data_tag, MPI_COMM_WORLD);
+		ierr = MPI_Send(&pi, 1, MPI_DOUBLE, root_process, send_data_tag, MPI_COMM_WORLD);
 
 	}else{
 
 		//receive circle_count
-		ierr = MPI_Recv(&to_receive, 1, MPI_DOUBLE, root_process, send_data_tag, MPI_COMM_WORLD, &status);
+		for(my_id = 1; my_id < num_procs; my_id++)
+			ierr = MPI_Recv(&to_receive, 1, MPI_DOUBLE, MPI_ANY_SOURCE, send_data_tag, MPI_COMM_WORLD, &status);
 
 		printf("receiving pi value: %10.8f\n", to_receive);
 
