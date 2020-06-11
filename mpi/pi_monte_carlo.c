@@ -6,7 +6,7 @@
 
 //approximating PI value with Monte Carlo's algorithm 
 //source: https://computing.llnl.gov/tutorials/mpi/
-#define points 10000
+#define points 10000000
 #define send_data_tag 2001
 #define return_data_tag 2002
 
